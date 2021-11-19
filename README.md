@@ -116,6 +116,76 @@ Allow the participation in distributed tracing of your requests through various 
 To show this capability download [Jaeger](https://www.jaegertracing.io/download/#binaries) and run ```./jaeger-all-in-one```.
 Open [http://localhost:16686/](http://localhost:16686/) to see the traces. Mind that you have to access your demo app endpoint for any traces to show on Jaeger UI.
 
+## Testing
+
+The implemented APIs are available under the classes [PetResource](https://github.com/VinuUD/petstore/blob/master/src/main/java/com/example/petstore/PetResource.java) and [PetTypeResource](https://github.com/VinuUD/petstore/blob/master/src/main/java/com/example/petstore/PetTypeResource.java). Unit tests per each API is available under [src/test](https://github.com/VinuUD/petstore/tree/master/src/test/java/org/acme).
+
+Once the code is opened in the preferred IDE, a play button will be available next to each test. Each test will yield a pass if all the APIs are functioning as required.
+
+Usually you are able to run the following command to perform the tests.
+    
+    ./gradlew test
+
+If you are using a Unix environment the `gradlew.Unix` file must be used.
+
 ## Deploying Application
 
 To deploy the demo app on a docker-compose please visit [./deploy](https://github.com/rasika/petstore/tree/master/deploy)
+
+## CURL instructions
+
+The CURL commands can be used to test the APIs upon deployment.
+
+### Pet Resource
+
+#### Get a list of all pets use the following command.
+
+    curl http://localhost:8080/v1/pets
+
+#### Search pets by name
+
+    curl http://localhost:8080/v1/pets/name/Peththappu
+This will return a list of the pets named Peththappu.
+
+#### Search pets by age
+
+    curl http://localhost:8080/v1/pets/age/12
+This will return a list of pets aged 12.
+
+#### Add new pets
+
+    curl -X POST http://localhost:8080/v1/pets/add -H 'Content-Type: application/json' -d '{""petAge": 10, "petId": 5, "petName": "Kaluwa", "petType": "Dog"}'
+
+A pet of type Dog, whose aged 10 and is named Kaluwa will be formed under the ID 5.
+#### Update existing pets
+
+    curl -X PUT http://localhost:8080/v1/pets/update -H 'Content-Type: application/json' -d '{""petAge": 123, "petId": 2, "petName": "Kitty", "petType": "Cat"}'
+This will update the details of the pet with ID 2.
+#### Delete pets
+
+    curl -X DELETE http://localhost:8080/v1/pets/delete/3
+This will delete the details of the pet with ID 2.
+
+### Pet Type Resource
+
+#### View All Pet Types
+    curl http://localhost:8080/v1/pets/types
+
+#### View All Pets Grouped by their type
+    curl http://localhost:8080/v1/pets/types/all
+
+#### View the pets of required type
+    curl http://localhost:8080/v1/pets/types/Dog
+    
+#### Add new pet type
+    curl -X POST http://localhost:8080/v1/pets/types/add -H 'Content-Type: application/json' -d '{"petTypeID": 5, "petType":"Mouse"}'
+
+#### Update existing pet type
+    curl -X PUT http://localhost:8080/v1/pets/types/update -H 'Content-Type: application/json' -d '{"petTypeID": 5, "petType":"Wild Mouse"}'
+
+#### Delete pet type
+    curl http://localhost:8080/v1/pets/types/delete/2
+
+## TODO
+* Cascade changes done in Pet Type Resource to reflect in the Pet Resource.
+
