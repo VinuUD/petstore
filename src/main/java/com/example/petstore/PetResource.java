@@ -1,12 +1,11 @@
 package com.example.petstore;
 
+import com.example.petstore.data.Pets;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
@@ -20,33 +19,15 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 @Produces("application/json")
 public class PetResource {
 
+	final private Pets petData = Pets.getInstance();
+
 	@APIResponses(value = {
 			@APIResponse(responseCode = "200", description = "All Pets", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(ref = "Pet"))) })
 	@GET
 	public Response getPets() {
-		List<Pet> pets = new ArrayList<Pet>();
-		Pet pet1 = new Pet();
-		pet1.setPetId(1);
-		pet1.setPetAge(3);
-		pet1.setPetName("Boola");
-		pet1.setPetType("Dog");
 
-		Pet pet2 = new Pet();
-		pet2.setPetId(2);
-		pet2.setPetAge(4);
-		pet2.setPetName("Sudda");
-		pet2.setPetType("Cat");
-
-		Pet pet3 = new Pet();
-		pet3.setPetId(3);
-		pet3.setPetAge(2);
-		pet3.setPetName("Peththappu");
-		pet3.setPetType("Bird");
-
-		pets.add(pet1);
-		pets.add(pet2);
-		pets.add(pet3);
-		return Response.ok(pets).build();
+		List<Pet> petList = petData.getPetList();
+		return Response.ok(petList).build();
 	}
 
 	@APIResponses(value = {
@@ -58,13 +39,76 @@ public class PetResource {
 		if (petId < 0) {
 			return Response.status(Status.NOT_FOUND).build();
 		}
-		Pet pet = new Pet();
-		pet.setPetId(petId);
-		pet.setPetAge(3);
-		pet.setPetName("Buula");
-		pet.setPetType("Dog");
+
+		Pet pet1 = petData.getPetByID(petId);
+
+		if(pet1 != null){
+			return Response.ok(pet1).build();
+		}
+
+		return Response.status(Status.NOT_FOUND).build();
+	}
+
+	@APIResponses(value = {
+			@APIResponse(responseCode = "200", description = "Pet with name", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(ref = "Pet"))),
+			@APIResponse(responseCode = "404", description = "No Pet found for the name.") })
+	@GET
+	@Path("name/{petName}")
+	public Response getPetByName(@PathParam("petName") String petName) {
+
+
+		Pet pet1 = petData.getPetByName(petName);
+
+		if(pet1 != null){
+			return Response.ok(pet1).build();
+		}
+
+		return Response.status(Status.NOT_FOUND).build();
+	}
+
+	@APIResponses(value = {
+			@APIResponse(responseCode = "200", description = "Pet with age", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(ref = "Pet"))),
+			@APIResponse(responseCode = "404", description = "No Pet found for the age.") })
+	@GET
+	@Path("age/{petAge}")
+	public Response getPetByAge(@PathParam("petAge") int petAge) {
+
+		List<Pet> petsWithAge = petData.getPetByAge(petAge);
+
+		if(petsWithAge.size() > 0){
+			return Response.ok(petsWithAge).build();
+		}
+
+		return Response.status(Status.NOT_FOUND).build();
+	}
+
+	@POST
+	@Path("add")
+	@Consumes(MediaType.APPLICATION_JSON)
+	public Response addPet( Pet pet ) {
+		Pet addedPet = petData.addPet(pet);
+
+		return Response.ok(addedPet).build();
+	}
+
+	@PUT
+	@Path("update")
+	@Consumes(MediaType.APPLICATION_JSON)
+	public Response updatePet( Pet pet ) {
+		Pet updatedPet = petData.updatePet(pet);
 
 		return Response.ok(pet).build();
-		
+	}
+
+	@DELETE
+	@Path("delete/{petId}")
+	public Response removePet(@PathParam("petId") int petId ) {
+		int removedPet = petData.removePet(petId);
+
+		if (removedPet != -1) {
+			return Response.ok(removedPet).build();
+		}
+
+		return Response.status(Status.NOT_FOUND).build();
 	}
 }
